@@ -1,0 +1,16 @@
+# Build output and caches
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# PlatformIO IDE files
+.vscode/
+*.code-workspace
+
+# macOS metadata
+.DS_Store
+
+# Editor swap files
+*.swp
+*.swo
+*~
