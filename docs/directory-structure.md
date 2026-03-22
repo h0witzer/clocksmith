@@ -9,7 +9,7 @@ clocksmith/
 ├── .gitignore              ← Tells Git to ignore build output (.pio/, etc.)
 ├── README.md               ← Project overview and quick-start instructions
 │
-├── include/                ← Project-wide header files (added to all include paths)
+├── include/                ← Public interface headers (on the compiler path for all files)
 │   ├── IMotor.hpp          ← Abstract interface for a single clock-hand motor
 │   ├── IDisplay.hpp        ← Abstract interface for any visual display peripheral
 │   ├── IClockCore.hpp      ← Abstract interface for the time-keeping subsystem
@@ -18,8 +18,8 @@ clocksmith/
 │   ├── IDigitGroup.hpp     ← Abstract interface for a grouped (tens/ones) display
 │   └── HardwareRegistry.hpp← Registry that maps named "slots" to implementations
 │
-├── src/                    ← Main application source (compiled by PlatformIO)
-│   ├── main.cpp            ← Entry point: wires hardware to logic, calls setup/loop
+├── src/                    ← Framework source — library implementation code only
+│   ├── main.cpp            ← FRAMEWORK DEV STUB (not a consumer file — see examples/)
 │   └── HardwareRegistry.cpp← Implementation of the HardwareRegistry class
 │
 ├── lib/                    ← Local project libraries (PlatformIO auto-discovers these)
@@ -43,6 +43,10 @@ clocksmith/
 │   │   └── StepperMotorStub.hpp   ← Template for wrapping a stepper motor
 │   └── displays/           ← One file per display type
 │       └── NeoPixelDisplayStub.hpp← Template for wrapping a NeoPixel ring
+│
+├── examples/               ← Consumer entry point examples (copy into your sculpture project)
+│   └── basic-clock/
+│       └── main.cpp        ← Annotated reference: how to wire drivers to ClockLogic
 │
 ├── docs/                   ← Framework documentation
 │   ├── architecture.md              ← Why we decouple hardware from logic
@@ -80,10 +84,22 @@ without needing a relative path.
 
 ### `src/`
 
-This is the main application source directory that PlatformIO compiles into the final firmware binary. It contains:
+This folder contains two files that serve different purposes:
 
-- **`main.cpp`** — the only file allowed to `#include` real hardware libraries. This is where you wire everything together.
-- **`HardwareRegistry.cpp`** — the implementation of the HardwareRegistry class. Kept in `src/` (not `include/`) because it contains executable code, not just declarations.
+- **`HardwareRegistry.cpp`** — the implementation of the `HardwareRegistry` class. This is genuine library code, included in every consumer build via `library.json`'s `srcFilter`.
+- **`main.cpp`** — a **framework development stub**. It exists solely so that `pio run` inside the clocksmith repository compiles successfully. It contains the bare minimum `setup()` and `loop()` required by the Arduino framework. **This is not a consumer file.** Do not use it as a template for your sculpture project.
+
+For the consumer entry point reference, see **`examples/basic-clock/main.cpp`**.
+
+---
+
+### `examples/`
+
+Each subdirectory of `examples/` is a self-contained consumer entry point that you can copy as-is into your own sculpture project's `src/main.cpp`. PlatformIO and the Arduino IDE both recognise the `examples/` convention.
+
+- **`examples/basic-clock/main.cpp`** — shows how to instantiate and register motor, display, and clock-core drivers, and how to wire them into ClockLogic.
+
+**What lives in `examples/` belongs in your project, not in clocksmith.** These files are annotated reference patterns — copy them, adapt the driver class names and pin numbers to your hardware, and they become your project's real entry point.
 
 ---
 

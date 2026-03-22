@@ -44,5 +44,12 @@
             "-Ilib/curves"
         ],
         "libArchive": false
-    }
+    },
+    "examples": [
+        {
+            "name": "BasicClock",
+            "base": "examples/basic-clock",
+            "files": ["main.cpp"]
+        }
+    ]
 }

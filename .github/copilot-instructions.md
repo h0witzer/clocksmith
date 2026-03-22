@@ -37,7 +37,7 @@ clocksmith/
 │   ├── IPositionCurve.hpp
 │   └── HardwareRegistry.hpp
 ├── src/
-│   ├── main.cpp        ← Application entry point; the hardware seam
+│   ├── main.cpp        ← FRAMEWORK DEV STUB only — not a consumer file
 │   └── HardwareRegistry.cpp
 ├── lib/
 │   ├── ClockLogic/     ← Pure time→position logic
@@ -46,6 +46,9 @@ clocksmith/
 ├── hal/
 │   ├── motors/         ← StepperMotorStub.hpp  (copy → rename → fill TODOs)
 │   └── displays/       ← NeoPixelDisplayStub.hpp (copy → rename → fill TODOs)
+├── examples/
+│   └── basic-clock/
+│       └── main.cpp    ← Annotated consumer reference; copy into your sculpture project
 └── docs/
 ```
 
@@ -55,7 +58,7 @@ In a **consumer sculpture project**, the layout mirrors this but the framework c
 my-sculpture/
 ├── platformio.ini      ← lib_deps = https://github.com/h0witzer/clocksmith.git
 ├── lib/drivers/        ← concrete IMotor / IDisplay / IClockCore implementations
-└── src/main.cpp        ← the only seam
+└── src/main.cpp        ← the only seam (see clocksmith/examples/basic-clock/main.cpp for the pattern)
 ```
 
 ---
@@ -145,17 +148,22 @@ virtual bool isSynchronised() const                                  = 0;
 
 ---
 
-## How to wire main.cpp
+## How to wire the consumer's src/main.cpp
+
+This pattern lives in the **consumer sculpture project**, not in the clocksmith repo.
+A fully-annotated reference is in `examples/basic-clock/main.cpp` in the clocksmith repo.
 
 ```cpp
+// my-sculpture/src/main.cpp  ← THE CONSUMER'S FILE, not clocksmith's src/main.cpp
 #include "HardwareRegistry.hpp"
 #include "ClockLogic.hpp"
-// concrete drivers from lib/drivers/:
+// concrete drivers from lib/drivers/ in the consumer project:
 #include "MyStepperMotor.hpp"
 #include "MyNeoPixelRing.hpp"
 #include "MyClockCore.hpp"
 
 HardwareRegistry registry;
+IClockCore*      clockCore  = nullptr;
 ClockLogic*      clockLogic = nullptr;
 
 void setup()
@@ -169,7 +177,8 @@ void setup()
     registry.registerMotor(Slots::Motor::MINUTE_HAND, &minuteMotor);
     registry.registerDisplay(Slots::Display::MAIN_RING, &ring);
 
-    static ClockLogic logic(rtc, registry);
+    clockCore = &rtc;
+    static ClockLogic logic(*clockCore, registry);
     clockLogic = &logic;
 }
 
@@ -178,8 +187,8 @@ void loop()
     if (clockLogic) clockLogic->update();
 
     // call update() on every registered motor/display:
-    if (auto* m = registry.getMotor(Slots::Motor::HOUR_HAND))   m->update();
-    if (auto* m = registry.getMotor(Slots::Motor::MINUTE_HAND)) m->update();
+    if (auto* m = registry.getMotor(Slots::Motor::HOUR_HAND))     m->update();
+    if (auto* m = registry.getMotor(Slots::Motor::MINUTE_HAND))   m->update();
     if (auto* d = registry.getDisplay(Slots::Display::MAIN_RING)) d->update();
 }
 ```

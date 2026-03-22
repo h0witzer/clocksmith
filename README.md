@@ -50,7 +50,7 @@ To pin to a specific release (recommended): append `#v1.0.0` to the URL.
 - **[docs/adding-a-motor-driver.md](docs/adding-a-motor-driver.md)**
 - **[docs/adding-a-display-driver.md](docs/adding-a-display-driver.md)**
 
-**Step 4 — Wire everything together in `src/main.cpp` and upload.**
+**Step 4 — Wire everything together in your project's `src/main.cpp` and upload.** Use [examples/basic-clock/main.cpp](examples/basic-clock/main.cpp) in this repo as a fully-annotated reference showing the complete wiring pattern.
 
 ---
 
@@ -73,13 +73,14 @@ clocksmith/
 ├── include/                ← Abstract interfaces (IMotor, IDisplay, IClockCore,
 │                              IDigitMechanism, IPositionCurve, IDigitGroup)
 │   └── HardwareRegistry.hpp← Named slot registry / factory
-├── src/                    ← Application entry point and registry implementation
+├── src/                    ← Framework source (HardwareRegistry.cpp + dev stub only)
 ├── lib/ClockLogic/         ← Core time→position logic (hardware-free)
 ├── lib/mechanisms/         ← Digit mechanism handlers (multi-rev, linkage, groups)
 ├── lib/curves/             ← Non-linear position correction curves
 ├── hal/                    ← Concrete driver templates (hardware-specific stubs)
 │   ├── motors/
 │   └── displays/
+├── examples/basic-clock/   ← Consumer entry point reference — copy into your project
 └── docs/                   ← Developer documentation
 ```
 
