@@ -204,6 +204,7 @@ Your sculpture project is still a separate repository that depends on clocksmith
 ## Further Reading
 
 - [architecture.md](architecture.md) — why we decouple hardware from logic
+- [using-copilot-to-scaffold-a-project.md](using-copilot-to-scaffold-a-project.md) — how to use GitHub Copilot to generate drivers and work across both repos
 - [adding-a-motor-driver.md](adding-a-motor-driver.md) — step-by-step guide to writing a new motor driver in your consumer project
 - [adding-a-display-driver.md](adding-a-display-driver.md) — step-by-step guide to wrapping a display library
 - [mechanisms.md](mechanisms.md) — multi-revolution drives, linkages, digit groups, non-linear curves

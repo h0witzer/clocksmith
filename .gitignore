@@ -5,7 +5,11 @@
 
 # PlatformIO IDE files
 .vscode/
+# Ignore personal/machine-specific workspace files.
+# Named template workspace files (*.code-workspace) are intentionally
+# committed so users have a ready-to-edit starting point.
 *.code-workspace
+!clocksmith-multiroot.code-workspace
 
 # macOS metadata
 .DS_Store

@@ -92,6 +92,7 @@ See **[docs/directory-structure.md](docs/directory-structure.md)** for the full 
 | Document | Description |
 |---|---|
 | [docs/using-as-a-library.md](docs/using-as-a-library.md) | **Start here** — how to use clocksmith as a dependency, not a fork |
+| [docs/using-copilot-to-scaffold-a-project.md](docs/using-copilot-to-scaffold-a-project.md) | How to use GitHub Copilot to create a sculpture project and work across both repos simultaneously |
 | [docs/architecture.md](docs/architecture.md) | Why we decouple hardware from logic; system overview |
 | [docs/directory-structure.md](docs/directory-structure.md) | Annotated folder tree explaining each file's role |
 | [docs/mechanisms.md](docs/mechanisms.md) | Mechanism handlers: multi-revolution, linkage, digit groups, non-linear curves |
