@@ -1,0 +1,48 @@
+{
+    "name": "clocksmith",
+    "version": "1.0.0",
+    "description": "A modular, hardware-agnostic C++ framework for building Kinetic Clock Sculptures on Arduino and PlatformIO targets.",
+    "keywords": [
+        "clock",
+        "kinetic",
+        "motor",
+        "stepper",
+        "servo",
+        "arduino",
+        "sculpture",
+        "neopixel",
+        "display",
+        "rtc"
+    ],
+    "authors": [
+        {
+            "name": "h0witzer",
+            "url": "https://github.com/h0witzer"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/h0witzer/clocksmith"
+    },
+    "homepage": "https://github.com/h0witzer/clocksmith",
+    "license": "MIT",
+    "frameworks": ["arduino"],
+    "platforms": "*",
+    "build": {
+        "srcDir": ".",
+        "includeDir": "include",
+        "srcFilter": [
+            "-<*>",
+            "+<src/HardwareRegistry.cpp>",
+            "+<lib/ClockLogic/ClockLogic.cpp>",
+            "+<lib/curves/LookupTableCurve.cpp>"
+        ],
+        "flags": [
+            "-Iinclude",
+            "-Ilib/ClockLogic",
+            "-Ilib/mechanisms",
+            "-Ilib/curves"
+        ],
+        "libArchive": false
+    }
+}

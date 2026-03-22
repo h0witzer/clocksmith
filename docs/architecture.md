@@ -212,9 +212,43 @@ See **[docs/mechanisms.md](mechanisms.md)** for worked examples of all four hand
 
 ---
 
+## The Framework / Project Boundary
+
+clocksmith is a **library**, not a project template. The correct way to build a kinetic clock sculpture is to create a separate project repository and declare clocksmith as a dependency — exactly the same way you would depend on AccelStepper or Adafruit NeoPixel.
+
+```
+my-sculpture/          ← YOUR project repository
+├── platformio.ini     ← lib_deps = https://github.com/h0witzer/clocksmith.git
+├── lib/drivers/
+│   ├── ULN2003StepperMotor.hpp   ← you write this
+│   └── DS3231ClockCore.hpp       ← you write this
+└── src/
+    └── main.cpp       ← you write this (the seam)
+
+clocksmith/            ← framework; fetched automatically by PlatformIO
+├── include/           ← abstract interfaces — IMotor, IDisplay, …
+├── lib/ClockLogic/    ← core logic; never touches hardware
+├── lib/mechanisms/    ← digit mechanism handlers
+└── lib/curves/        ← non-linear correction curves
+```
+
+**What lives in your project:** only what is specific to your sculpture — pin numbers, gear ratios, calibration tables, driver implementations.
+
+**What lives in clocksmith:** the interfaces, the logic, and the mechanism handlers that are reusable across every sculpture.
+
+This separation means:
+- Multiple sculpture projects share the same framework without copying any code.
+- Upgrading the framework is a one-line change in `platformio.ini`.
+- Your sculpture-specific drivers are not cluttered with framework internals.
+
+See **[using-as-a-library.md](using-as-a-library.md)** for the step-by-step setup guide.
+
+---
+
 ## Further Reading
 
 - [Directory Structure](directory-structure.md) — annotated folder tree
+- [Using as a Library](using-as-a-library.md) — dependency-based setup for sculpture projects
 - [Adding a Motor Driver](adding-a-motor-driver.md) — step-by-step guide
 - [Adding a Display Driver](adding-a-display-driver.md) — step-by-step guide
 - [Mechanism Handlers](mechanisms.md) — multi-revolution, linkage, digit groups, non-linear curves

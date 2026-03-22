@@ -21,14 +21,48 @@ Swapping a stepper motor for a servo is a single-line change in `main.cpp`. Noth
 
 ---
 
-## Quick Start
+## Quick Start — Building a Sculpture Project
 
-1. Clone or fork this repository.
-2. Open the folder in PlatformIO (VS Code extension or CLI).
-3. Read **[docs/architecture.md](docs/architecture.md)** to understand the design.
-4. Follow **[docs/adding-a-motor-driver.md](docs/adding-a-motor-driver.md)** to write your first motor driver.
-5. Follow **[docs/adding-a-display-driver.md](docs/adding-a-display-driver.md)** to connect a display.
-6. Wire everything together in `src/main.cpp` and upload.
+> **Do not fork or clone this repo to build your sculpture.** Create a separate project and add clocksmith as a library dependency. This keeps the framework code out of your project and means you automatically receive fixes and improvements by bumping a version number.
+>
+> See **[docs/using-as-a-library.md](docs/using-as-a-library.md)** for the full explanation.
+
+**Step 1 — Create a new PlatformIO project for your sculpture:**
+
+```sh
+pio project init --board uno --ide vscode
+```
+
+**Step 2 — Add clocksmith to `platformio.ini`:**
+
+```ini
+[env:arduino_uno]
+platform    = atmelavr
+board       = uno
+framework   = arduino
+lib_deps    =
+    https://github.com/h0witzer/clocksmith.git
+```
+
+To pin to a specific release (recommended): append `#v1.0.0` to the URL.
+
+**Step 3 — Write your hardware drivers in your project's `lib/` folder.** Use the stubs in [hal/motors/](hal/motors/) and [hal/displays/](hal/displays/) as starting templates. Follow the step-by-step guides:
+- **[docs/adding-a-motor-driver.md](docs/adding-a-motor-driver.md)**
+- **[docs/adding-a-display-driver.md](docs/adding-a-display-driver.md)**
+
+**Step 4 — Wire everything together in `src/main.cpp` and upload.**
+
+---
+
+## Contributing to the Framework
+
+If you want to fix a bug, add a new interface, or improve the documentation *inside clocksmith itself*:
+
+1. Fork this repository on GitHub.
+2. Clone your fork locally and open it in PlatformIO.
+3. Make your changes, then open a pull request back to `h0witzer/clocksmith`.
+
+Developing the framework and building a sculpture project that uses it are **two different workflows**.
 
 ---
 
@@ -57,6 +91,7 @@ See **[docs/directory-structure.md](docs/directory-structure.md)** for the full 
 
 | Document | Description |
 |---|---|
+| [docs/using-as-a-library.md](docs/using-as-a-library.md) | **Start here** — how to use clocksmith as a dependency, not a fork |
 | [docs/architecture.md](docs/architecture.md) | Why we decouple hardware from logic; system overview |
 | [docs/directory-structure.md](docs/directory-structure.md) | Annotated folder tree explaining each file's role |
 | [docs/mechanisms.md](docs/mechanisms.md) | Mechanism handlers: multi-revolution, linkage, digit groups, non-linear curves |
