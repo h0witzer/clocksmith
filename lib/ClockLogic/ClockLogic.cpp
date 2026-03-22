@@ -40,33 +40,55 @@ void ClockLogic::update()
     uint8_t seconds = 0;
     _clockCore.getTime(hours, minutes, seconds);
 
-    // Step 3 — Compute normalised target positions (0.0 – 1.0).
-    const float hourPos   = toHourPosition(hours, minutes);
-    const float minutePos = toMinutePosition(minutes, seconds);
-    const float secondPos = toSecondPosition(seconds);
-
-    // Step 4 — Command the motors.
+    // -----------------------------------------------------------------------
+    // Step 3a — ANALOGUE PATH: compute normalised positions and command motors.
     //
     // getMotor() returns nullptr when no motor was registered for a slot.
     // The null-checks below make ClockLogic safe even when running without
     // hardware (e.g. in a host-side unit test or on a board that only has
     // two hands, not three).
+    // -----------------------------------------------------------------------
     if (IMotor* hour = _registry.getMotor(Slots::Motor::HOUR_HAND))
     {
-        hour->setTarget(hourPos);
+        hour->setTarget(toHourPosition(hours, minutes));
     }
     if (IMotor* minute = _registry.getMotor(Slots::Motor::MINUTE_HAND))
     {
-        minute->setTarget(minutePos);
+        minute->setTarget(toMinutePosition(minutes, seconds));
     }
     if (IMotor* second = _registry.getMotor(Slots::Motor::SECOND_HAND))
     {
-        second->setTarget(secondPos);
+        second->setTarget(toSecondPosition(seconds));
     }
 
-    // Step 5 — Update the display (if one is registered).
-    // TODO: Extend display rendering once IDisplay usage patterns are
-    //       finalised for your specific sculpture.
+    // -----------------------------------------------------------------------
+    // Step 3b — DIGIT PATH: drive digit mechanisms and groups.
+    //
+    // updateDigits() checks for a DigitGroup first (which handles tens/ones
+    // splitting internally), then falls back to individually registered
+    // digit mechanisms.  Both can be registered simultaneously if desired.
+    //
+    // Hours are passed as raw 24-hour values (0–23).  If your display shows
+    // 12-hour time, apply the conversion inside your digit mechanism or group.
+    // -----------------------------------------------------------------------
+    updateDigits(Slots::DigitGroup::HOURS,
+                 Slots::Digit::HOURS_TENS,
+                 Slots::Digit::HOURS_ONES,
+                 hours);
+
+    updateDigits(Slots::DigitGroup::MINUTES,
+                 Slots::Digit::MINUTES_TENS,
+                 Slots::Digit::MINUTES_ONES,
+                 minutes);
+
+    updateDigits(Slots::DigitGroup::SECONDS,
+                 Slots::Digit::SECONDS_TENS,
+                 Slots::Digit::SECONDS_ONES,
+                 seconds);
+
+    // -----------------------------------------------------------------------
+    // Step 4 — Update the display (if one is registered).
+    // -----------------------------------------------------------------------
     if (IDisplay* display = _registry.getDisplay(Slots::Display::MAIN_RING))
     {
         display->update();
@@ -106,4 +128,34 @@ float ClockLogic::toSecondPosition(uint8_t seconds) const
     //
     // Example: 30s  →  30 / 60  =  0.5  (6 o'clock)
     return static_cast<float>(seconds) / 60.0f;
+}
+
+// ----------------------------------------------------------------------------
+// Private: digit dispatch
+// ----------------------------------------------------------------------------
+
+void ClockLogic::updateDigits(const char* groupSlot,
+                               const char* tensSlot,
+                               const char* onesSlot,
+                               uint8_t     value)
+{
+    // Check for a digit group first.  A DigitGroup manages the tens/ones
+    // split internally, so one call does everything.
+    if (IDigitGroup* group = _registry.getDigitGroup(groupSlot))
+    {
+        group->setValue(value);
+    }
+
+    // Independently check for individual digit mechanisms.  This allows a
+    // project to register BOTH a group AND individual mechanisms for the same
+    // time unit (e.g. the group drives the physical display, and an individual
+    // mechanism drives a separate indicator LED ring).
+    if (IDigitMechanism* tens = _registry.getDigitMechanism(tensSlot))
+    {
+        tens->setDigit(value / 10);
+    }
+    if (IDigitMechanism* ones = _registry.getDigitMechanism(onesSlot))
+    {
+        ones->setDigit(value % 10);
+    }
 }

@@ -13,6 +13,9 @@ clocksmith/
 │   ├── IMotor.hpp          ← Abstract interface for a single clock-hand motor
 │   ├── IDisplay.hpp        ← Abstract interface for any visual display peripheral
 │   ├── IClockCore.hpp      ← Abstract interface for the time-keeping subsystem
+│   ├── IDigitMechanism.hpp ← Abstract interface for a single-digit display mechanism
+│   ├── IPositionCurve.hpp  ← Abstract interface for non-linear position correction
+│   ├── IDigitGroup.hpp     ← Abstract interface for a grouped (tens/ones) display
 │   └── HardwareRegistry.hpp← Registry that maps named "slots" to implementations
 │
 ├── src/                    ← Main application source (compiled by PlatformIO)
@@ -20,9 +23,20 @@ clocksmith/
 │   └── HardwareRegistry.cpp← Implementation of the HardwareRegistry class
 │
 ├── lib/                    ← Local project libraries (PlatformIO auto-discovers these)
-│   └── ClockLogic/         ← Core logic library: converts time → motor targets
-│       ├── ClockLogic.hpp  ← ClockLogic class declaration
-│       └── ClockLogic.cpp  ← ClockLogic implementation
+│   ├── ClockLogic/         ← Core logic library: converts time → motor/digit targets
+│   │   ├── ClockLogic.hpp  ← ClockLogic class declaration
+│   │   └── ClockLogic.cpp  ← ClockLogic implementation
+│   │
+│   ├── mechanisms/         ← Digit mechanism handlers
+│   │   ├── SingleMotorDigit.hpp     ← One motor, one digit, optional curve
+│   │   ├── MultiRevolutionDigit.hpp ← One motor, N revolutions per digit sweep
+│   │   ├── LinkedMotorDigit.hpp     ← Two motors + ILinkageSolver (linkages)
+│   │   └── DigitGroup.hpp           ← Groups tens/ones for one time unit
+│   │
+│   └── curves/             ← Non-linear position curve implementations
+│       ├── LinearCurve.hpp          ← Identity (no correction)
+│       ├── LookupTableCurve.hpp     ← Piecewise-linear calibration table
+│       └── LookupTableCurve.cpp     ← Interpolation implementation
 │
 ├── hal/                    ← Hardware Abstraction Layer: concrete driver templates
 │   ├── motors/             ← One file per motor type
@@ -31,9 +45,10 @@ clocksmith/
 │       └── NeoPixelDisplayStub.hpp← Template for wrapping a NeoPixel ring
 │
 └── docs/                   ← Developer documentation
-    ├── architecture.md     ← Why we decouple hardware from logic
-    ├── directory-structure.md ← This file
-    ├── adding-a-motor-driver.md  ← Step-by-step: write a new motor driver
+    ├── architecture.md          ← Why we decouple hardware from logic
+    ├── directory-structure.md   ← This file
+    ├── mechanisms.md            ← Mechanism handlers: multi-rev, linkage, digit groups, curves
+    ├── adding-a-motor-driver.md ← Step-by-step: write a new motor driver
     └── adding-a-display-driver.md← Step-by-step: wrap a display library
 ```
 
@@ -74,6 +89,10 @@ PlatformIO treats each subdirectory of `lib/` as an independent library. Librari
 
 `ClockLogic` lives here because it is a self-contained module with no hardware dependencies. If you later want to reuse ClockLogic in a different project, you can copy the `lib/ClockLogic/` folder straight across.
 
+`lib/mechanisms/` contains the four digit mechanism handlers — `SingleMotorDigit`, `MultiRevolutionDigit`, `LinkedMotorDigit`, and `DigitGroup`. These are header-only and depend only on the interfaces in `include/`.
+
+`lib/curves/` contains `LinearCurve` (header-only) and `LookupTableCurve` (header + implementation) for non-linear position correction.
+
 ---
 
 ### `hal/`
@@ -106,5 +125,7 @@ Human-readable documentation written in Markdown. GitHub renders these files aut
 | A new motor driver (e.g. `ServoMotor`) | `hal/motors/ServoMotor.hpp` |
 | A new display driver (e.g. `OLEDDisplay`) | `hal/displays/OLEDDisplay.hpp` |
 | A new time source (e.g. `MillisClockCore`) | `hal/clocks/MillisClockCore.hpp` |
+| A custom digit mechanism (e.g. `BinaryDigit`) | `lib/mechanisms/BinaryDigit.hpp` |
+| A custom position curve | `lib/curves/MyCurve.hpp` |
 | New shared logic (e.g. `AlarmLogic`) | `lib/AlarmLogic/AlarmLogic.hpp` + `.cpp` |
 | A new project-wide interface | `include/IAlarm.hpp` |

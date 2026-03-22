@@ -172,8 +172,49 @@ As long as every `update()` call returns in under ~1 ms, the whole system feels 
 
 ---
 
+## The Mechanism Layer: Complex Kinetic Displays
+
+Some kinetic sculptures go beyond analogue hands. They display individual **digits** driven by mechanisms that have specific physical constraints:
+
+- A **Geneva drive** that requires the motor to make several full revolutions to advance one digit.
+- A **mechanical linkage** where two arms together point to a digit.
+- **Independent tens and ones** digit mechanisms for each time unit.
+- **Non-linear scales** introduced by cams, non-circular gears, or off-centre pivots.
+
+clocksmith adds a mechanism layer between ClockLogic and IMotor to handle all these cases:
+
+```
+[IClockCore] ──────> ClockLogic ──────> [IMotor:  hour_hand]       (analogue)
+                                    └──> [IMotor:  minute_hand]     (analogue)
+                                    └──> [IDigitGroup: minutes]     (digit)
+                                           └──> SingleMotorDigit (ones)
+                                           └──> MultiRevolutionDigit (tens)
+                                    └──> [IDigitMechanism: s_ones] (digit)
+                                    └──> [IDisplay: main_ring]
+```
+
+### The Four Mechanism Types
+
+| Handler | Use When |
+|---|---|
+| `SingleMotorDigit` | One motor, one digit, sweeps 0–9 within one revolution |
+| `MultiRevolutionDigit` | Motor must complete N full revolutions to sweep 0–9 (Geneva drives, odometers) |
+| `LinkedMotorDigit` | Two motors together indicate a digit (linkages, pantographs) |
+| `DigitGroup` | One time unit has independent tens and ones digit mechanisms |
+
+### Non-Linear Correction
+
+The `IPositionCurve` interface (with `LinearCurve` and `LookupTableCurve` implementations) maps logical positions to physical motor positions, correcting for any non-linearity in the mechanical output.
+
+All four handlers implement `IDigitMechanism`, so ClockLogic drives them through a uniform interface regardless of complexity.
+
+See **[docs/mechanisms.md](mechanisms.md)** for worked examples of all four handlers.
+
+---
+
 ## Further Reading
 
 - [Directory Structure](directory-structure.md) — annotated folder tree
 - [Adding a Motor Driver](adding-a-motor-driver.md) — step-by-step guide
 - [Adding a Display Driver](adding-a-display-driver.md) — step-by-step guide
+- [Mechanism Handlers](mechanisms.md) — multi-revolution, linkage, digit groups, non-linear curves

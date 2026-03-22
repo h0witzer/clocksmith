@@ -73,6 +73,8 @@
 #include <stdint.h>
 #include "IMotor.hpp"
 #include "IDisplay.hpp"
+#include "IDigitMechanism.hpp"
+#include "IDigitGroup.hpp"
 
 // ----------------------------------------------------------------------------
 // Slot name constants
@@ -93,6 +95,41 @@ namespace Slots
     namespace Display
     {
         constexpr const char* MAIN_RING = "main_ring";
+    }
+
+    // -------------------------------------------------------------------------
+    // Digit mechanism slots — one slot per individual digit position.
+    // Use these when you want to control each digit mechanism independently
+    // (e.g. when the tens and ones use completely different motor types).
+    //
+    // ClockLogic will extract the tens/ones of each time unit and call
+    // setDigit() on whichever mechanisms are registered here.
+    // -------------------------------------------------------------------------
+    namespace Digit
+    {
+        constexpr const char* HOURS_TENS    = "digit_h_tens";
+        constexpr const char* HOURS_ONES    = "digit_h_ones";
+        constexpr const char* MINUTES_TENS  = "digit_m_tens";
+        constexpr const char* MINUTES_ONES  = "digit_m_ones";
+        constexpr const char* SECONDS_TENS  = "digit_s_tens";
+        constexpr const char* SECONDS_ONES  = "digit_s_ones";
+    }
+
+    // -------------------------------------------------------------------------
+    // Digit group slots — one slot per time unit.
+    // Use these when your tens and ones digit mechanisms are managed together
+    // by a DigitGroup object.  ClockLogic will call setValue(hours),
+    // setValue(minutes), or setValue(seconds) on the registered group, and the
+    // group handles the tens/ones split internally.
+    //
+    // Prefer digit groups when both digits use the same mechanism type and
+    // you want to keep the registration code compact.
+    // -------------------------------------------------------------------------
+    namespace DigitGroup
+    {
+        constexpr const char* HOURS   = "group_hours";
+        constexpr const char* MINUTES = "group_minutes";
+        constexpr const char* SECONDS = "group_seconds";
     }
 }
 
@@ -152,6 +189,49 @@ public:
      */
     IDisplay* getDisplay(const char* slot) const;
 
+    // -----------------------------------------------------------------------
+    // Digit mechanism slots — individual digit positions
+    // -----------------------------------------------------------------------
+
+    /**
+     * @brief Register a digit mechanism under a named slot.
+     *
+     * @param slot       Slot name — use the Slots::Digit constants.
+     * @param mechanism  Pointer to a concrete IDigitMechanism object.
+     *
+     * @note The registry does NOT own the object.  Declare the mechanism
+     *       as a static local in setup() to ensure correct lifetime.
+     */
+    void registerDigitMechanism(const char* slot, IDigitMechanism* mechanism);
+
+    /**
+     * @brief Look up a digit mechanism by slot name.
+     *
+     * @param slot  The slot name used during registerDigitMechanism().
+     * @return      Pointer to the registered IDigitMechanism, or nullptr.
+     */
+    IDigitMechanism* getDigitMechanism(const char* slot) const;
+
+    // -----------------------------------------------------------------------
+    // Digit group slots — tens/ones groups per time unit
+    // -----------------------------------------------------------------------
+
+    /**
+     * @brief Register a digit group under a named slot.
+     *
+     * @param slot   Slot name — use the Slots::DigitGroup constants.
+     * @param group  Pointer to a concrete IDigitGroup object.
+     */
+    void registerDigitGroup(const char* slot, IDigitGroup* group);
+
+    /**
+     * @brief Look up a digit group by slot name.
+     *
+     * @param slot  The slot name used during registerDigitGroup().
+     * @return      Pointer to the registered IDigitGroup, or nullptr.
+     */
+    IDigitGroup* getDigitGroup(const char* slot) const;
+
 private:
     // Fixed-capacity slot tables — no heap allocation needed.
     static constexpr uint8_t MAX_MOTORS   = 8;
@@ -173,4 +253,25 @@ private:
     DisplayEntry _displays[MAX_DISPLAYS] = {};
     uint8_t      _motorCount             = 0;
     uint8_t      _displayCount           = 0;
+
+    // Digit mechanism slots
+    static constexpr uint8_t MAX_DIGIT_MECHANISMS = 8;
+    static constexpr uint8_t MAX_DIGIT_GROUPS     = 4;
+
+    struct DigitMechanismEntry
+    {
+        const char*      slot;
+        IDigitMechanism* mechanism;
+    };
+
+    struct DigitGroupEntry
+    {
+        const char* slot;
+        IDigitGroup* group;
+    };
+
+    DigitMechanismEntry _digitMechanisms[MAX_DIGIT_MECHANISMS] = {};
+    DigitGroupEntry     _digitGroups[MAX_DIGIT_GROUPS]         = {};
+    uint8_t             _digitMechanismCount                   = 0;
+    uint8_t             _digitGroupCount                       = 0;
 };

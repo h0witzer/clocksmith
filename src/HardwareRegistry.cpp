@@ -58,3 +58,52 @@ IDisplay* HardwareRegistry::getDisplay(const char* slot) const
     }
     return nullptr;
 }
+
+// ----------------------------------------------------------------------------
+// Digit mechanism slots
+// ----------------------------------------------------------------------------
+
+void HardwareRegistry::registerDigitMechanism(const char* slot,
+                                               IDigitMechanism* mechanism)
+{
+    if (_digitMechanismCount >= MAX_DIGIT_MECHANISMS) return;
+    _digitMechanisms[_digitMechanismCount].slot      = slot;
+    _digitMechanisms[_digitMechanismCount].mechanism = mechanism;
+    ++_digitMechanismCount;
+}
+
+IDigitMechanism* HardwareRegistry::getDigitMechanism(const char* slot) const
+{
+    for (uint8_t i = 0; i < _digitMechanismCount; ++i)
+    {
+        if (strcmp(_digitMechanisms[i].slot, slot) == 0)
+        {
+            return _digitMechanisms[i].mechanism;
+        }
+    }
+    return nullptr;
+}
+
+// ----------------------------------------------------------------------------
+// Digit group slots
+// ----------------------------------------------------------------------------
+
+void HardwareRegistry::registerDigitGroup(const char* slot, IDigitGroup* group)
+{
+    if (_digitGroupCount >= MAX_DIGIT_GROUPS) return;
+    _digitGroups[_digitGroupCount].slot  = slot;
+    _digitGroups[_digitGroupCount].group = group;
+    ++_digitGroupCount;
+}
+
+IDigitGroup* HardwareRegistry::getDigitGroup(const char* slot) const
+{
+    for (uint8_t i = 0; i < _digitGroupCount; ++i)
+    {
+        if (strcmp(_digitGroups[i].slot, slot) == 0)
+        {
+            return _digitGroups[i].group;
+        }
+    }
+    return nullptr;
+}

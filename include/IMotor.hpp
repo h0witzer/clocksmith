@@ -29,15 +29,26 @@
  * NORMALIZED POSITIONS
  * ============================================================================
  *
- * All positions are expressed as a float in the range [0.0, 1.0] where:
- *   0.0  = 12 o'clock  (zero / home reference)
- *   0.25 = 3 o'clock
- *   0.5  = 6 o'clock
- *   0.75 = 9 o'clock
+ * Positions are expressed as a non-negative float where 1.0 represents one
+ * full revolution of the output shaft:
  *
- * This convention frees ClockLogic from ever knowing about steps, degrees,
- * microseconds of PWM pulse width, or encoder ticks. The concrete driver is
- * responsible for translating the float into whatever its hardware understands.
+ *   Standard analogue clock hand:
+ *     0.0  = 12 o'clock  (zero / home reference)
+ *     0.25 = 3 o'clock
+ *     0.5  = 6 o'clock
+ *     0.75 = 9 o'clock
+ *
+ *   Multi-revolution mechanisms (e.g. geneva drives, odometer digits):
+ *     Values greater than 1.0 are explicitly supported and represent
+ *     additional full revolutions.  For example, 3.5 means "three and a
+ *     half full revolutions from the home position."  Concrete motor drivers
+ *     must NOT clamp the upper bound to 1.0; they should convert the full
+ *     float to an absolute step or encoder count.
+ *
+ * This convention frees ClockLogic and the mechanism handlers from ever
+ * knowing about steps, degrees, microseconds of PWM pulse width, or encoder
+ * ticks. The concrete driver is responsible for translating the float into
+ * whatever its hardware understands.
  *
  * ============================================================================
  */
@@ -50,11 +61,15 @@ public:
     virtual ~IMotor() = default;
 
     /**
-     * @brief Command the motor to move to a normalized position.
+     * @brief Command the motor to move to a normalised position.
      *
-     * @param position  Target position in the range [0.0, 1.0].
-     *                  Values outside this range should be clamped or wrapped
-     *                  by the concrete implementation.
+     * @param position  Target position as a non-negative float.
+     *                  For standard analogue hands this is in [0.0, 1.0].
+     *                  For multi-revolution mechanisms (e.g. MultiRevolutionDigit)
+     *                  values greater than 1.0 are valid and represent additional
+     *                  full revolutions beyond the home position.
+     *                  Negative values must be clamped to 0.0 by the
+     *                  concrete implementation.
      *
      * @note This call is NON-BLOCKING.  It records the target; the actual
      *       movement happens incrementally inside update().  Never block
@@ -84,9 +99,11 @@ public:
     virtual bool isAtTarget() const = 0;
 
     /**
-     * @brief Return the current normalized position of the motor shaft.
+     * @brief Return the current normalised position of the motor shaft.
      *
-     * @return Position in [0.0, 1.0] as last known to the driver.
+     * @return Current position as a non-negative float.  For single-revolution
+     *         use this is in [0.0, 1.0].  For multi-revolution use it may
+     *         be greater than 1.0.
      */
     virtual float getPosition() const = 0;
 };

@@ -87,11 +87,15 @@ public:
      */
     void setTarget(float position) override
     {
-        // Clamp to [0.0, 1.0] so out-of-range values don't crash the driver.
+        // Clamp negative values — a motor cannot go "before" its home position.
+        // We do NOT clamp the upper limit: values > 1.0 represent multi-revolution
+        // positions used by MultiRevolutionDigit and similar handlers.
+        // For example, setTarget(3.5) means "3.5 full revolutions from home."
         if (position < 0.0f) position = 0.0f;
-        if (position > 1.0f) position = 1.0f;
 
         // Convert the normalised position to an absolute step index.
+        // For position > 1.0 this produces a step count beyond one revolution,
+        // which AccelStepper handles correctly as an absolute step target.
         _targetStep = static_cast<int>(
             position * static_cast<float>(_totalSteps));
 

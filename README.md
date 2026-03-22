@@ -12,8 +12,10 @@ A typical Arduino clock sketch tightly couples the time logic, the motor driver,
 |---|---|---|
 | *What time is it?* | `IClockCore` | DS3231 RTC, NTP (ESP32), `millis()` counter |
 | *Move the hands* | `IMotor` | Stepper motor, servo, DC + encoder |
+| *Show a digit* | `IDigitMechanism` | SingleMotorDigit, MultiRevolutionDigit, LinkedMotorDigit |
+| *Group tens + ones* | `IDigitGroup` | DigitGroup (auto-splits any integer into digits) |
 | *Show the time* | `IDisplay` | NeoPixel ring, OLED, e-ink |
-| *Coordinate all three* | `ClockLogic` | Pure logic — zero hardware calls |
+| *Coordinate all* | `ClockLogic` | Pure logic — zero hardware calls |
 
 Swapping a stepper motor for a servo is a single-line change in `main.cpp`. Nothing else in the project needs to change.
 
@@ -34,10 +36,13 @@ Swapping a stepper motor for a servo is a single-line change in `main.cpp`. Noth
 
 ```
 clocksmith/
-├── include/                ← Abstract interfaces (IMotor, IDisplay, IClockCore)
+├── include/                ← Abstract interfaces (IMotor, IDisplay, IClockCore,
+│                              IDigitMechanism, IPositionCurve, IDigitGroup)
 │   └── HardwareRegistry.hpp← Named slot registry / factory
 ├── src/                    ← Application entry point and registry implementation
 ├── lib/ClockLogic/         ← Core time→position logic (hardware-free)
+├── lib/mechanisms/         ← Digit mechanism handlers (multi-rev, linkage, groups)
+├── lib/curves/             ← Non-linear position correction curves
 ├── hal/                    ← Concrete driver templates (hardware-specific stubs)
 │   ├── motors/
 │   └── displays/
@@ -54,6 +59,7 @@ See **[docs/directory-structure.md](docs/directory-structure.md)** for the full 
 |---|---|
 | [docs/architecture.md](docs/architecture.md) | Why we decouple hardware from logic; system overview |
 | [docs/directory-structure.md](docs/directory-structure.md) | Annotated folder tree explaining each file's role |
+| [docs/mechanisms.md](docs/mechanisms.md) | Mechanism handlers: multi-revolution, linkage, digit groups, non-linear curves |
 | [docs/adding-a-motor-driver.md](docs/adding-a-motor-driver.md) | Step-by-step guide to writing a new motor driver |
 | [docs/adding-a-display-driver.md](docs/adding-a-display-driver.md) | Step-by-step guide to wrapping a display library |
 

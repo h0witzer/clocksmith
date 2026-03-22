@@ -9,17 +9,31 @@
  * ClockLogic is the "brain" of the system.  Every time update() is called it:
  *
  *   1. Asks IClockCore for the current hours / minutes / seconds.
- *   2. Converts those integers to normalised float positions (0.0–1.0).
- *   3. Commands the registered IMotor instances via setTarget().
+ *   2. For analogue hands: converts H/M/S to normalised [0.0, 1.0] positions
+ *      and commands the registered IMotor instances via setTarget().
+ *   3. For digit displays: extracts individual decimal digits and commands
+ *      registered IDigitMechanism or IDigitGroup instances via setDigit() /
+ *      setValue().
  *   4. Passes display update calls through to any registered IDisplay.
  *
  * Crucially, this class deliberately knows NOTHING about stepper motors,
  * NeoPixels, DS3231 RTCs, or any other hardware.  It only speaks the
- * language of the three interfaces:
+ * language of the interfaces:
  *
- *   IClockCore  →  "what time is it?"
- *   IMotor      →  "move to this normalised position"
- *   IDisplay    →  "update your visual state"
+ *   IClockCore         →  "what time is it?"
+ *   IMotor             →  "move to this normalised position"
+ *   IDigitMechanism    →  "show this digit"
+ *   IDigitGroup        →  "show this full number (group handles tens/ones)"
+ *   IDisplay           →  "update your visual state"
+ *
+ * ============================================================================
+ * ANALOGUE vs. DIGIT MODE
+ * ============================================================================
+ *
+ * Both modes are active simultaneously.  You can mix and match:
+ *   - Register only IMotors for a pure analogue sculpture.
+ *   - Register only IDigitGroups for a pure digit sculpture.
+ *   - Register both for a sculpture that has analogue hands AND digit displays.
  *
  * ============================================================================
  * ADDING NEW BEHAVIOUR
@@ -56,8 +70,10 @@ public:
     /**
      * @brief Main update tick — call from loop() as fast as possible.
      *
-     * Reads the current time, computes normalised target positions, and
-     * commands the registered motors.
+     * Reads the current time, then:
+     *   - Commands analogue motors (if any IMotors are registered).
+     *   - Commands digit mechanisms and groups (if any are registered).
+     *   - Ticks any registered IDisplay.
      *
      * @note Each motor's own update() method must also be called every loop
      *       iteration for movement to actually happen (see src/main.cpp).
@@ -68,6 +84,10 @@ public:
 private:
     IClockCore&       _clockCore;
     HardwareRegistry& _registry;
+
+    // -----------------------------------------------------------------------
+    // Analogue position calculations
+    // -----------------------------------------------------------------------
 
     /**
      * @brief Convert hours and minutes to a normalised hour-hand position.
@@ -99,4 +119,26 @@ private:
      * @return         Position in [0.0, 1.0].
      */
     float toSecondPosition(uint8_t seconds) const;
+
+    // -----------------------------------------------------------------------
+    // Digit dispatch helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * @brief Drive all registered digit groups and individual digit mechanisms
+     *        for one time unit.
+     *
+     * @param groupSlot  Slot name for the IDigitGroup (e.g. Slots::DigitGroup::HOURS).
+     * @param tensSlot   Slot name for the tens IDigitMechanism.
+     * @param onesSlot   Slot name for the ones IDigitMechanism.
+     * @param value      The full integer time value (0–59 or 0–23).
+     *
+     * If a group is registered under groupSlot, it receives setValue(value).
+     * Otherwise, individual mechanisms under tensSlot / onesSlot receive
+     * setDigit() with the extracted tens and ones digits respectively.
+     */
+    void updateDigits(const char* groupSlot,
+                      const char* tensSlot,
+                      const char* onesSlot,
+                      uint8_t     value);
 };
