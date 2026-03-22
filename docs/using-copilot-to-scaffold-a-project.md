@@ -5,6 +5,8 @@ This guide answers two related questions:
 1. **How do I use Copilot to create a new sculpture project repository?**
 2. **When I need to change both my sculpture project AND the clocksmith framework at the same time, how do I give Copilot context over both repositories simultaneously?**
 
+> **New to VS Code and Copilot?** If you have only used Copilot through the web interface, start with the [`learning/`](../learning/README.md) folder first. It covers VS Code setup, how Copilot Chat works, and the GitHub CLI — all of which are used throughout this guide.
+
 ---
 
 ## Part 1 — Creating the Sculpture Repository

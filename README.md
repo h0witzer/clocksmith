@@ -99,6 +99,16 @@ See **[docs/directory-structure.md](docs/directory-structure.md)** for the full 
 | [docs/adding-a-motor-driver.md](docs/adding-a-motor-driver.md) | Step-by-step guide to writing a new motor driver |
 | [docs/adding-a-display-driver.md](docs/adding-a-display-driver.md) | Step-by-step guide to wrapping a display library |
 
+## Learning Resources
+
+If you are new to VS Code, GitHub Copilot, or the GitHub CLI, the [`learning/`](learning/) folder has step-by-step guides that are intentionally separate from the framework documentation:
+
+| Guide | What it covers |
+|---|---|
+| [learning/01-vscode-and-copilot-setup.md](learning/01-vscode-and-copilot-setup.md) | Install VS Code, PlatformIO, and the Copilot extensions; sign in; verify everything works |
+| [learning/02-copilot-in-vscode.md](learning/02-copilot-in-vscode.md) | Inline completions, Copilot Chat, `@workspace` context, slash commands, effective prompting |
+| [learning/03-github-cli.md](learning/03-github-cli.md) | Install and authenticate the `gh` CLI; create repos; open pull requests from the terminal |
+
 ---
 
 ## Key Design Rules
