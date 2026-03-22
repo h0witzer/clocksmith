@@ -55,10 +55,11 @@ The simplest digit handler. One motor, one digit, one full revolution (or less) 
 
 ```cpp
 // In main.cpp, setup():
-#include "../hal/motors/StepperMotorStub.hpp"
-#include "../lib/mechanisms/SingleMotorDigit.hpp"
+// (your motor driver is included at the top of main.cpp,
+//  e.g. #include "ULN2003StepperMotor.hpp")
+#include "SingleMotorDigit.hpp"
 
-static StepperMotorStub motor(2048);
+static ULN2003StepperMotor motor(2048, 8, 9, 10, 11);
 static SingleMotorDigit minutesOnes(motor);        // linear, full 0–9 range
 registry.registerDigitMechanism(Slots::Digit::MINUTES_ONES, &minutesOnes);
 ```
@@ -66,7 +67,7 @@ registry.registerDigitMechanism(Slots::Digit::MINUTES_ONES, &minutesOnes);
 ### With a position curve
 
 ```cpp
-#include "../lib/curves/LookupTableCurve.hpp"
+#include "LookupTableCurve.hpp"
 
 // Calibration table: at each logical position, what physical position
 // does the motor need to reach?  Measured by hand against the sculpture.
@@ -105,9 +106,10 @@ Example: if your gearbox has a 3:1 ratio and it takes 3 input revolutions to sho
 ### Minimal example
 
 ```cpp
-#include "../lib/mechanisms/MultiRevolutionDigit.hpp"
+#include "MultiRevolutionDigit.hpp"
 
-static StepperMotorStub genevaDriveMotor(2048);
+// (your motor driver is already included at the top of main.cpp)
+static ULN2003StepperMotor genevaDriveMotor(2048, 8, 9, 10, 11);
 // This mechanism needs 4 full revolutions to sweep digits 0–9.
 static MultiRevolutionDigit secondsOnes(genevaDriveMotor, /* revolutionsPerSweep = */ 4.0f);
 registry.registerDigitMechanism(Slots::Digit::SECONDS_ONES, &secondsOnes);
@@ -183,10 +185,11 @@ For a real physical linkage with known arm lengths L1 and L2 and pivot geometry,
 ### Minimal example
 
 ```cpp
-#include "../lib/mechanisms/LinkedMotorDigit.hpp"
+#include "LinkedMotorDigit.hpp"
 
-static StepperMotorStub shoulderMotor(2048);
-static StepperMotorStub elbowMotor(2048);
+// (your motor driver is already included at the top of main.cpp)
+static ULN2003StepperMotor shoulderMotor(2048, 8,  9,  10, 11);
+static ULN2003StepperMotor elbowMotor   (2048, 4,  5,  6,  7);
 static TwoArmSolver     mySolver;
 static LinkedMotorDigit hoursOnes(shoulderMotor, elbowMotor, mySolver);
 
@@ -228,12 +231,13 @@ setValue(47)
 ### Minimal example
 
 ```cpp
-#include "../lib/mechanisms/SingleMotorDigit.hpp"
-#include "../lib/mechanisms/MultiRevolutionDigit.hpp"
-#include "../lib/mechanisms/DigitGroup.hpp"
+#include "SingleMotorDigit.hpp"
+#include "MultiRevolutionDigit.hpp"
+#include "DigitGroup.hpp"
 
-static StepperMotorStub motorMinuteOnes(2048);
-static StepperMotorStub motorMinuteTens(2048);
+// (your motor driver is already included at the top of main.cpp)
+static ULN2003StepperMotor motorMinuteOnes(2048, 8, 9, 10, 11);
+static ULN2003StepperMotor motorMinuteTens(2048, 4, 5, 6,  7);
 
 // Ones digit: single revolution (digits 0–9)
 static SingleMotorDigit minutesOnesDigit(motorMinuteOnes);

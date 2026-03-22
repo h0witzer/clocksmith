@@ -44,12 +44,20 @@ clocksmith/
 │   └── displays/           ← One file per display type
 │       └── NeoPixelDisplayStub.hpp← Template for wrapping a NeoPixel ring
 │
-└── docs/                   ← Developer documentation
-    ├── architecture.md          ← Why we decouple hardware from logic
-    ├── directory-structure.md   ← This file
-    ├── mechanisms.md            ← Mechanism handlers: multi-rev, linkage, digit groups, curves
-    ├── adding-a-motor-driver.md ← Step-by-step: write a new motor driver
-    └── adding-a-display-driver.md← Step-by-step: wrap a display library
+├── docs/                   ← Framework documentation
+│   ├── architecture.md              ← Why we decouple hardware from logic
+│   ├── directory-structure.md       ← This file
+│   ├── mechanisms.md                ← Mechanism handlers: multi-rev, linkage, digit groups, curves
+│   ├── using-as-a-library.md        ← How to consume clocksmith as a PlatformIO dependency
+│   ├── using-copilot-to-scaffold-a-project.md ← Using Copilot to create a sculpture project
+│   ├── adding-a-motor-driver.md     ← Step-by-step: write a new motor driver
+│   └── adding-a-display-driver.md   ← Step-by-step: wrap a display library
+│
+└── learning/               ← AI workflow guides (separate from framework docs)
+    ├── README.md                    ← Index and reading order
+    ├── 01-vscode-and-copilot-setup.md ← VS Code and Copilot extension setup
+    ├── 02-copilot-in-vscode.md      ← Using Copilot Chat, @workspace, prompting
+    └── 03-github-cli.md             ← GitHub CLI (gh) installation and usage
 ```
 
 ---
@@ -118,14 +126,24 @@ Human-readable documentation written in Markdown. GitHub renders these files aut
 
 ---
 
+### `learning/`
+
+Tooling and workflow guides for developers who are new to VS Code, GitHub Copilot, or the GitHub CLI. These guides are intentionally separate from the framework documentation — they teach the *tools*, not the clocksmith API. See [`learning/README.md`](../learning/README.md) for the recommended reading order.
+
+---
+
 ## Where to Put a New Driver
 
-| What you are adding | Where it goes |
-|---|---|
-| A new motor driver (e.g. `ServoMotor`) | `hal/motors/ServoMotor.hpp` |
-| A new display driver (e.g. `OLEDDisplay`) | `hal/displays/OLEDDisplay.hpp` |
-| A new time source (e.g. `MillisClockCore`) | `hal/clocks/MillisClockCore.hpp` |
-| A custom digit mechanism (e.g. `BinaryDigit`) | `lib/mechanisms/BinaryDigit.hpp` |
-| A custom position curve | `lib/curves/MyCurve.hpp` |
-| New shared logic (e.g. `AlarmLogic`) | `lib/AlarmLogic/AlarmLogic.hpp` + `.cpp` |
-| A new project-wide interface | `include/IAlarm.hpp` |
+This table covers two different contexts. Read the context column carefully.
+
+| What you are adding | Where it goes | Context |
+|---|---|---|
+| A concrete motor driver for your sculpture | `lib/drivers/YourMotor.hpp` | **Consumer project** |
+| A concrete display driver for your sculpture | `lib/drivers/YourDisplay.hpp` | **Consumer project** |
+| A concrete clock core (RTC/NTP) for your sculpture | `lib/drivers/YourClockCore.hpp` | **Consumer project** |
+| A stub/template for a motor type | `hal/motors/StepperMotorStub.hpp` | clocksmith framework |
+| A stub/template for a display type | `hal/displays/NeoPixelDisplayStub.hpp` | clocksmith framework |
+| A custom digit mechanism (e.g. `BinaryDigit`) | `lib/mechanisms/BinaryDigit.hpp` | clocksmith framework |
+| A custom position curve | `lib/curves/MyCurve.hpp` | clocksmith framework |
+| New shared logic (e.g. `AlarmLogic`) | `lib/AlarmLogic/AlarmLogic.hpp` + `.cpp` | clocksmith framework |
+| A new project-wide interface | `include/IAlarm.hpp` | clocksmith framework |

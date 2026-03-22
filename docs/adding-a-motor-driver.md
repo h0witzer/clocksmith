@@ -18,24 +18,26 @@ This guide walks you through wrapping a real stepper motor library into the `IMo
 The `IMotor` interface defines a contract with four methods:
 
 ```cpp
-virtual void  setTarget(float position) = 0;  // position in [0.0, 1.0]
+virtual void  setTarget(float position) = 0;  // normalised position; clamp negative to 0.0
 virtual void  update()                  = 0;  // non-blocking tick
 virtual bool  isAtTarget()        const = 0;  // has it arrived?
-virtual float getPosition()       const = 0;  // current position [0.0, 1.0]
+virtual float getPosition()       const = 0;  // current normalised position
 ```
 
 Your driver class must inherit `IMotor` and implement all four. The framework will call `setTarget()` when the time changes and `update()` every loop iteration. Your driver translates these generic calls into AccelStepper (or your library's) API.
+
+> **Position range:** For standard analogue clock hands the position is in `[0.0, 1.0]`. For multi-revolution mechanisms (Geneva drives, odometers) values **greater than 1.0 are explicitly valid** — e.g. `3.5` means "3.5 full revolutions from home". Only **negative** values must be clamped; never clamp the upper bound.
 
 ---
 
 ## Step 2 — Copy the Stub File
 
-Copy `hal/motors/StepperMotorStub.hpp` and rename it to match your hardware:
+In your **sculpture project** (not the clocksmith repo), create a `lib/drivers/` folder if it doesn't exist. Copy `hal/motors/StepperMotorStub.hpp` from the clocksmith library — available at `.pio/libdeps/<env>/clocksmith/hal/motors/StepperMotorStub.hpp` after `pio pkg install`, or [directly on GitHub](https://github.com/h0witzer/clocksmith/blob/main/hal/motors/StepperMotorStub.hpp) — and save it as your new driver:
 
 ```
-hal/motors/ULN2003StepperMotor.hpp   (28BYJ-48 + ULN2003 driver board)
-hal/motors/A4988StepperMotor.hpp     (NEMA 17 + A4988 breakout)
-hal/motors/ServoMotor.hpp            (any standard RC servo)
+lib/drivers/ULN2003StepperMotor.hpp   (28BYJ-48 + ULN2003 driver board)
+lib/drivers/A4988StepperMotor.hpp     (NEMA 17 + A4988 breakout)
+lib/drivers/ServoMotor.hpp            (any standard RC servo)
 ```
 
 Open your new file and change the class name at the top to match the filename.
@@ -44,20 +46,20 @@ Open your new file and change the class name at the top to match the filename.
 
 ## Step 3 — Add the Library Dependency
 
-In `platformio.ini`, add the library to the `lib_deps` key for your environment:
+In your sculpture project's `platformio.ini`, declare both clocksmith and your motor library under `lib_deps`:
 
 ```ini
 [env:arduino_uno]
 platform    = atmelavr
 board       = uno
 framework   = arduino
-build_flags = -I include
 lib_deps    =
+    https://github.com/h0witzer/clocksmith.git
     waspinator/AccelStepper   ; for stepper motors
     ; or: arduino-libraries/Servo  ; for servo motors
 ```
 
-Run `pio pkg install` (or let the IDE sync) to download it.
+Run `pio pkg install` (or let the IDE sync) to download both.
 
 ---
 
@@ -94,15 +96,17 @@ When you instantiate the motor in `setup()` with `static`, the object lives for 
 ## Step 5 — Implement `setTarget(float position)`
 
 This method must:
-1. Clamp `position` to `[0.0, 1.0]`.
-2. Convert the normalised float to an absolute step count.
-3. Tell the library where to go.
+1. Clamp negative values to `0.0` (a motor cannot go "before" its home position).
+2. **Do NOT clamp the upper bound.** Values greater than `1.0` are valid and represent multi-revolution positions used by `MultiRevolutionDigit` and similar handlers.
+3. Convert the normalised float to an absolute step count.
+4. Tell the library where to go.
 
 ```cpp
 void setTarget(float position) override
 {
     if (position < 0.0f) position = 0.0f;
-    if (position > 1.0f) position = 1.0f;
+    // Do NOT clamp position > 1.0 — values above 1.0 are valid for
+    // multi-revolution mechanisms (Geneva drives, odometers, etc.).
 
     const long target = static_cast<long>(
         position * static_cast<float>(_totalSteps));
@@ -172,11 +176,11 @@ float getPosition() const override
 
 ## Step 8 — Register the Motor in `main.cpp`
 
-In `src/main.cpp`, add the `#include` and instantiation:
+In your sculpture project's `src/main.cpp`, add the `#include` and instantiation. PlatformIO automatically discovers files in `lib/drivers/`, so you can include by filename only — no path prefix needed:
 
 ```cpp
-// Add this include near the top of main.cpp:
-#include "../hal/motors/ULN2003StepperMotor.hpp"
+// Add near the top of main.cpp (the only file allowed to include concrete drivers):
+#include "ULN2003StepperMotor.hpp"
 
 // Inside setup():
 static ULN2003StepperMotor hourMotor(2048, 8, 9, 10, 11);
@@ -206,9 +210,10 @@ You can write a minimal `MockMotor` in a test file that records the last positio
 Before you mark the driver as done, verify:
 
 - [ ] The class inherits `IMotor` and all four pure virtual methods are implemented.
-- [ ] `setTarget()` clamps the input to `[0.0, 1.0]` before converting.
+- [ ] `setTarget()` clamps **only negative** values to `0.0`; values above `1.0` are **not** clamped.
 - [ ] `update()` contains no `delay()` call.
-- [ ] `getPosition()` returns a value in `[0.0, 1.0]`.
+- [ ] `getPosition()` returns a non-negative float (may exceed `1.0` for multi-revolution use).
+- [ ] The driver file is in `lib/drivers/` of your sculpture project.
 - [ ] The motor is registered in `main.cpp` under a `Slots::Motor` constant.
 - [ ] `update()` is called in `loop()`.
 

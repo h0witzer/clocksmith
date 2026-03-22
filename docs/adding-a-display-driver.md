@@ -30,29 +30,29 @@ Your driver must inherit `IDisplay` and implement all five. The framework writes
 
 ## Step 2 — Install the Library
 
-Add the Adafruit NeoPixel library to your environment in `platformio.ini`:
+In your sculpture project's `platformio.ini`, declare both clocksmith and the Adafruit NeoPixel library under `lib_deps`:
 
 ```ini
 [env:arduino_uno]
 platform    = atmelavr
 board       = uno
 framework   = arduino
-build_flags = -I include
 lib_deps    =
+    https://github.com/h0witzer/clocksmith.git
     adafruit/Adafruit NeoPixel
 ```
 
-Run `pio pkg install` (or let the IDE sync) to download it. The library provides `Adafruit_NeoPixel.h`.
+Run `pio pkg install` (or let the IDE sync) to download both. The NeoPixel library provides `Adafruit_NeoPixel.h`.
 
 ---
 
 ## Step 3 — Copy the Stub File
 
-Copy `hal/displays/NeoPixelDisplayStub.hpp` and rename it:
+In your **sculpture project** (not the clocksmith repo), create a `lib/drivers/` folder if it doesn't exist. Copy `hal/displays/NeoPixelDisplayStub.hpp` from the clocksmith library — available at `.pio/libdeps/<env>/clocksmith/hal/displays/NeoPixelDisplayStub.hpp` after `pio pkg install`, or [directly on GitHub](https://github.com/h0witzer/clocksmith/blob/main/hal/displays/NeoPixelDisplayStub.hpp) — and save it as your new driver:
 
 ```
-hal/displays/NeoPixelRing60.hpp   (a 60-LED ring for the seconds track)
-hal/displays/NeoPixelRing12.hpp   (a 12-LED ring for the hours track)
+lib/drivers/NeoPixelRing60.hpp   (a 60-LED ring for the seconds track)
+lib/drivers/NeoPixelRing12.hpp   (a 12-LED ring for the hours track)
 ```
 
 Open your new file, change the class name at the top, and work through the TODOs.
@@ -166,18 +166,24 @@ uint16_t getPixelCount() const override
 
 ## Step 10 — Register the Display in `main.cpp`
 
-In `src/main.cpp`, add the include and the registration:
+In your sculpture project's `src/main.cpp`, add the include and the registration. PlatformIO automatically discovers files in `lib/drivers/`, so you can include by filename only:
 
 ```cpp
-// Add near the top of main.cpp:
-#include "../hal/displays/NeoPixelRing60.hpp"
+// Add near the top of main.cpp (the only file allowed to include concrete drivers):
+#include "NeoPixelRing60.hpp"
 
 // Inside setup():
 static NeoPixelRing60 ring(60, /* dataPin = */ 6);
 registry.registerDisplay(Slots::Display::MAIN_RING, &ring);
 ```
 
-That is it. ClockLogic will now call `ring.update()` every loop, and you can drive it from ClockLogic or any other logic module that looks up `Slots::Display::MAIN_RING`.
+That is it. Call `ring.update()` in `loop()` so the display can process any autonomous animation state:
+
+```cpp
+// Inside loop():
+IDisplay* d = registry.getDisplay(Slots::Display::MAIN_RING);
+if (d) d->update();
+```
 
 ---
 
@@ -213,7 +219,9 @@ Before you mark the driver as done, verify:
 - [ ] `setPixel()` silently ignores out-of-range indices.
 - [ ] `clear()` does NOT call `show()` automatically.
 - [ ] `update()` contains no `delay()` call.
+- [ ] The driver file is in `lib/drivers/` of your sculpture project.
 - [ ] The display is registered in `main.cpp` under `Slots::Display::MAIN_RING`.
+- [ ] `update()` is called in `loop()`.
 
 ---
 

@@ -139,6 +139,9 @@ void loop()
 
     IMotor* m = registry.getMotor(Slots::Motor::MINUTE_HAND);
     if (m) m->update();
+
+    IDisplay* d = registry.getDisplay(Slots::Display::MAIN_RING);
+    if (d) d->update();
 }
 ```
 

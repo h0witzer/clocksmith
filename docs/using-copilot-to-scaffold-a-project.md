@@ -46,7 +46,6 @@ board       = uno
 framework   = arduino
 lib_deps    =
     https://github.com/h0witzer/clocksmith.git#v1.0.0
-build_flags = -I src
 ```
 
 ### Step 4 — Add `.gitignore`
