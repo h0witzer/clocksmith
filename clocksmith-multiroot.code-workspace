@@ -1,0 +1,63 @@
+{
+    // ==========================================================================
+    // clocksmith multi-root workspace template
+    // ==========================================================================
+    //
+    // USAGE
+    // -----
+    // 1. Copy this file to the PARENT folder that contains both repos:
+    //
+    //      ~/projects/
+    //      ├── clocksmith/                       <- framework repo
+    //      ├── my-wall-clock/                    <- your sculpture repo
+    //      └── clocksmith-dev.code-workspace     <- copy lives here
+    //
+    //    Keep it OUTSIDE both repos — workspace files often contain machine-
+    //    specific paths and are excluded by each repo's .gitignore.
+    //
+    // 2. Rename the copy to something meaningful:
+    //      clocksmith-dev.code-workspace   (generic framework dev)
+    //      wall-clock-dev.code-workspace   (specific sculpture)
+    //
+    // 3. Change the "path" values below to match your folder names.
+    //
+    // 4. Open it:  code path/to/your-copy.code-workspace
+    //
+    // Once open, Copilot's @workspace context covers ALL folders listed here.
+    // Both .github/copilot-instructions.md files are read automatically.
+    //
+    // ==========================================================================
+
+    "folders": [
+        {
+            // The clocksmith framework repository.
+            // Change "path" if your folder has a different name.
+            "name": "clocksmith (framework)",
+            "path": "./clocksmith"
+        },
+        {
+            // Your sculpture project repository.
+            // Change "name" and "path" to match your project.
+            "name": "my-sculpture (project)",
+            "path": "./my-sculpture"
+        }
+    ],
+
+    "settings": {
+        // Surface clocksmith's public headers to IntelliSense and Copilot
+        // inside the sculpture project.  Adjust if your clocksmith folder
+        // name differs.
+        "C_Cpp.default.includePath": [
+            "${workspaceFolder:clocksmith (framework)}/include",
+            "${workspaceFolder:clocksmith (framework)}/lib/ClockLogic",
+            "${workspaceFolder:clocksmith (framework)}/lib/mechanisms",
+            "${workspaceFolder:clocksmith (framework)}/lib/curves"
+        ],
+
+        // Treat both folders as C++17.
+        "C_Cpp.default.cppStandard": "c++17",
+
+        // Keep each repo's files visually grouped in the Explorer sidebar.
+        "explorer.compactFolders": false
+    }
+}
