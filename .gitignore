@@ -1,0 +1,10 @@
+# Results
+/results/
+host/**/__pycache__/
+__pycache__/
+*.pyc
+
+# Build / IDE
+.venv/
+.vscode/
+.idea/

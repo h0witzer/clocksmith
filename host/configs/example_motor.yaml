@@ -1,0 +1,26 @@
+# Example motor profile for the clocksmith tester. Copy per motor you pull from
+# the drawer. Values come from the motor datasheet; torque estimate scales the
+# rated holding torque by the run current you select in the GUI.
+
+name: nema17-pancake-example
+
+# Mechanical / electrical datasheet figures.
+full_steps_per_rev: 200      # 200 = 1.8 deg, 400 = 0.9 deg
+step_angle_deg: 1.8
+rated_current_ma: 1000       # rated phase current, RMS
+holding_torque_ncm: 12.0     # holding torque at rated current
+
+# Default driver configuration to load for this motor.
+driver:
+  axis: X                    # RAMPS socket: X, Y, Z, E0, E1
+  microsteps: 16             # 0 (full), 2, 4, 8, 16, 32, 64, 128, 256
+  run_current_ma: 800
+  hold_current_ma: 400
+  chopper: stealth           # stealth | spread
+  tpwm_thrs: 0               # 0 keeps stealthChop at all speeds
+  sgthrs: 60                 # StallGuard sensitivity 0-255
+
+# Motion defaults.
+motion:
+  target_rpm: 120
+  accel_steps_s2: 20000

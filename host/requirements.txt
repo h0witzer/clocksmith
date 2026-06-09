@@ -1,0 +1,6 @@
+# clocksmith host requirements
+pyserial>=3.5
+PySide6>=6.6
+pyqtgraph>=0.13
+numpy>=1.24
+PyYAML>=6.0
